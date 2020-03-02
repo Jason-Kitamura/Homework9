@@ -1,14 +1,18 @@
 $('.save-note').on('click', saveNewNote);
 
+let i = 0;
+
 function saveNewNote() {
 
     const $newTitle = $('#newTitle').val();
     const $newText = $('#newText').val();
 
     var newNote = {
+        id : i,
         title: $newTitle,
         text: $newText
       };
+      i++;
       
     console.log(`saving new note: ${newNote}`);
 
@@ -34,32 +38,31 @@ $(document).ready( async function() {
     appendNotes( startList )
   })
 
+ async function deleteNote ( noteID ){
+    console.log( 'delete:', noteID );
+    const response = await $.ajax({
+      url: `/api/tables/${noteID}`,
+      type: 'DELETE' });
+    console.log( `finished deleting table: `, noteID  );
+    // toastr.info( apiResult.message );
+    console.log( response );
+    appendNotes( response );
+    // setTimeout( function(){ location.reload(); }, 3000 );
+  }
+
+  
+  
+
   function appendNotes( list ) {
     $( '.list-group' ).empty();
     list.forEach( function( note ) {
       $('.list-group').append (`
       <div class="note">
       <h3>${note.title}</h3>
-      <hr>
+      <button id="${note.id}" style="float: right;" onClick="deleteNote('${note.id}')" >delete</button><hr>
       <div class="text">${note.text}</div>
       `)
     })
   }
-
-// async function appendNotes() {
-//    const noteList = await $.get('/api/notes');
-//    console.log('note list from api:', noteList )
-//    noteList.forEach( function( note) {
-//      $('.list-group').append(`
-//         <div class="note">
-//             <h3>${note.title}</h3>
-//             <hr>
-//             <div class="text">
-//             <p>${note.text}</p>
-//           </div>
-//      `)
-//    })
-
-// }
 
 // this is the real index
