@@ -7,28 +7,27 @@ const app = express();
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(express.static('public'));
+app.use(bodyParser.urlencoded({ extended: false }));
 
 const PORT = process.env.PORT || 8080; 
-
-let notesList = [];
-
-
-
-
-app.use(express.static('public'));
-// needed for POST FORM requests
-app.use(bodyParser.urlencoded({ extended: false }));
 
 app.listen(PORT, function() {
     console.log("App listening on PORT " + PORT);
   });
 
+//array for title/text object. It changes a lot....
+let notesList = [];
+
+//post to get new note. This function clears the notesList array and pushes the database and new note
+// into it to make sure all of the objects are in one array.
+//
 app.post( '/api/notes', function ( req, res){
 
     let startNotes = fs.readFileSync( 'db.json', 'utf8');
+//clear array
       notesList = [];
-
-    console.log(`receving note:`, req.body);
+//add parsed database into array
       if ( startNotes == ""){
           console.log( 'empty db!')
       } else {
@@ -37,27 +36,31 @@ app.post( '/api/notes', function ( req, res){
               notesList.push( note );
             })
           }
+// add new note into array
       notesList.push( req.body )
-      
+// stringify and rewrite database with new array
       let jsonList = JSON.stringify(notesList);
       fs.writeFileSync('db.json', jsonList);
-
+//send JSON array to front end
     res.send ( jsonList );
-    // console.log('notes List:', notesList)
-
 })
+
+//.Get to send database notes to front-end when page loads
 app.get( '/api/startNotes', function ( req, res) {
   let startNotes = fs.readFileSync( 'db.json', 'utf8');
   console.log( startNotes );
   res.send( startNotes );
 })
 
+//delete receives note id through parameter. Pulls notes from database, and filters out note with id that needs to be deleted
 app.delete( '/api/tables/:noteID', async function( req, res ){
+//create var for revecing parameter
   const noteID = req.params.noteID;
   console.log(noteID);
+//clearing array with notes
+  notesList = [];
+//taking notes from database and pushing into server array
   let startNotes = fs.readFileSync( 'db.json', 'utf8');
-      notesList = [];
-
       if ( startNotes == ""){
           console.log( 'empty db!')
       } else {
@@ -66,28 +69,14 @@ app.delete( '/api/tables/:noteID', async function( req, res ){
               notesList.push( note );
             })
           }
-        console.log(notesList);
-        
-        notesList = notesList.filter( function( note){
-          return note.id !== noteID;
-        });
-        console.log( notesList );
-        
-        let jsonList = JSON.stringify(notesList);
-        fs.writeFileSync('db.json', jsonList);
+//filtering out the deleted note and we-writing the server array
+    notesList = notesList.filter( function( note){
+      return note.id !== noteID;
+    });
+//re-writing database with new array (without deleted object) 
+    let jsonList = JSON.stringify(notesList);
+    fs.writeFileSync('db.json', jsonList);
 
-  
-  // tablelist is FIRST 5
   res.send( notesList );
 })
-
-
-// const readDB = fs.readFileSync('db.json', 'utf8') ;
-
-// const parseDB = JSON.parse( readDB );
-
-// app.get('/api/notes', function ( req, res) {
-//   console.log('sent parseDB');
-//   res.send( parseDB );
-// })
 
