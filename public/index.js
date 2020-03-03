@@ -1,9 +1,10 @@
 $('.save-note').on('click', saveNewNote);
+$('.edit-note').on('click', toggleDelete);
 
 let i = 0;
 
 function saveNewNote() {
-
+    
     const $newTitle = $('#newTitle').val();
     const $newText = $('#newText').val();
 
@@ -28,7 +29,23 @@ function saveNewNote() {
       const newList = JSON.parse( response );
       appendNotes( newList );
     });
+    $('#newTitle').val('');
+    $('#newText').val('');
 }
+
+let viewDelete=true;
+
+function toggleDelete() {
+  console.log('edit toggle');
+  viewDelete = !viewDelete;
+
+    if (viewDelete==true){
+    $('.delete').removeClass('hide');
+    } else {
+    $('.delete').addClass('hide');
+}
+}
+
 
 $(document).ready( async function() {
   const startResonse = await $.get ( '/api/startNotes');
@@ -36,6 +53,11 @@ $(document).ready( async function() {
   const startList = JSON.parse(startResonse);
   console.log(startList);
     appendNotes( startList )
+    startId = startList[startList.length - 1]
+    console.log(startId.id);
+    i = startId.id;
+    i++
+    toggleDelete();
   })
 
  async function deleteNote ( noteID ){
@@ -59,7 +81,7 @@ $(document).ready( async function() {
       $('.list-group').append (`
       <div class="note">
       <h3>${note.title}</h3>
-      <button id="${note.id}" style="float: right;" onClick="deleteNote('${note.id}')" >delete</button><hr>
+      <button id="${note.id}" class="delete" style="float: right;" onClick="deleteNote('${note.id}')" >delete</button><hr>
       <div class="text">${note.text}</div>
       `)
     })

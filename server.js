@@ -8,7 +8,7 @@ const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-const PORT = 8080; 
+const PORT = process.env.PORT || 8080; 
 
 let notesList = [];
 
